@@ -1478,13 +1478,14 @@ public class BluetoothLePlugin extends CordovaPlugin {
       autoConnect = obj.optBoolean("autoConnect", false);
     }
 
-    if (Build.VERSION.SDK_INT < 23) {
-      BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback);
-    }
-    else {
-      BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
-    }    
+//    if (Build.VERSION.SDK_INT < 23) {
+//      BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback);
+//    }
+//    else {
+//      BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
+//    }    
     
+    BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
 
     connection.put(keyPeripheral, bluetoothGatt);
 
