@@ -4040,8 +4040,8 @@ public class BluetoothLePlugin extends CordovaPlugin {
       byte[] valArray = characteristic.getValue();          // Nxty
       int offset = ai.getAndAdd(valArray.length);           // Nxty
       ByteBuffer buf = ByteBuffer.allocate(offset + 4);     // Nxty: int is predefined as sizeof 4 in java
-      buf.putInt(0, offset);                                // Nxty
-      buf.put(4, valArray);                                 // Nxty
+      buf.putInt(offset);                                // Nxty
+      buf.put(valArray);                                 // Nxty
       byte[] valArrayWithOffset = buf.array();              // Nxty
       
       //Get the connected device
