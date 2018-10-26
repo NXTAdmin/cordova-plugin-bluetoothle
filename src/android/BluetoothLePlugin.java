@@ -45,8 +45,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic;         // Nxty
-import java.nio.ByteBuffer;                 // Nxty
+import java.util.concurrent.atomic.AtomicInteger;   // Nxty
+import java.nio.ByteBuffer;                         // Nxty
 
 import org.json.JSONArray;
 import org.json.JSONException;
