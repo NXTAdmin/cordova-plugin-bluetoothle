@@ -4029,8 +4029,19 @@ public class BluetoothLePlugin extends CordovaPlugin {
       }
     }
 
+    
+    private AtomicInteger ai;   // Nxty: New member variable of the bluetoothGattCallback class
+     
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+    
+      byte[] valArray = characteristic.getValue();          // Nxty
+      int offset = ai.getAndAdd(valArray.length);           // Nxty
+      ByteBuffer buf = ByteBuffer.allocate(offset + 4);     // Nxty: int is predefined as sizeof 4 in java
+      buf.putLong(offset);                                  // Nxty
+      buf.put(valArray);                                    // Nxty
+      byte[] valArrayWithOffset = buf.array();              // Nxty
+      
       //Get the connected device
       BluetoothDevice device = gatt.getDevice();
       String address = device.getAddress();
@@ -4056,8 +4067,9 @@ public class BluetoothLePlugin extends CordovaPlugin {
       addCharacteristic(returnObj, characteristic);
 
       addProperty(returnObj, keyStatus, statusSubscribedResult);
-      addPropertyBytes(returnObj, keyValue, characteristic.getValue());
-
+//      addPropertyBytes(returnObj, keyValue, characteristic.getValue());   // Nxty
+      addPropertyBytes(returnObj, keyValue, valArrayWithOffset );           // Nxty
+      
       //Return the characteristic value
       PluginResult result = new PluginResult(PluginResult.Status.OK, returnObj);
       result.setKeepCallback(true);
