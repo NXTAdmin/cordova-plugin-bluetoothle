@@ -4037,12 +4037,12 @@ public class BluetoothLePlugin extends CordovaPlugin {
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
     
-      byte[] valArray = characteristic.getValue();          // Nxty
-      int offset = ai.getAndAdd(valArray.length);           // Nxty
-      ByteBuffer buf = ByteBuffer.allocate(offset + 4);     // Nxty: int is predefined as sizeof 4 in java
-      buf.putInt(offset);                                // Nxty
-      buf.put(valArray);                                 // Nxty
-      byte[] valArrayWithOffset = buf.array();              // Nxty
+      byte[] valArray = characteristic.getValue();       // Nxty: Get a reference to the characteristic
+      int length = valArray.length;                      // Nxty: Get the length of the characteristic
+      ByteBuffer buf = ByteBuffer.allocate(length + 4);  // Nxty: create a buffer to do the capture, sizeof(int)=4
+      buf.put(valArray, 4, length);                      // Nxty: Capture the characteristic value
+      buf.putInt(ai.getAndAdd(length));                  // Nxty: Capture where it should be placed in the buffer
+      byte[] valArrayWithOffset = buf.array();           // Nxty
       
       //Get the connected device
       BluetoothDevice device = gatt.getDevice();
