@@ -45,6 +45,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic;         // Nxty
+import java.nio.ByteBuffer;                 // Nxty
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -4038,8 +4040,8 @@ public class BluetoothLePlugin extends CordovaPlugin {
       byte[] valArray = characteristic.getValue();          // Nxty
       int offset = ai.getAndAdd(valArray.length);           // Nxty
       ByteBuffer buf = ByteBuffer.allocate(offset + 4);     // Nxty: int is predefined as sizeof 4 in java
-      buf.putLong(offset);                                  // Nxty
-      buf.put(valArray);                                    // Nxty
+      buf.putInt(0, offset);                                // Nxty
+      buf.put(4, valArray);                                 // Nxty
       byte[] valArrayWithOffset = buf.array();              // Nxty
       
       //Get the connected device
