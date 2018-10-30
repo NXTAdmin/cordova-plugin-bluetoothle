@@ -4046,9 +4046,7 @@ Log.d("BLE", "onCharacteristicChanged: I am here");
       buf.put(valArray, 4, length);                      // Nxty: Capture the characteristic value
       buf.putInt(ai.getAndAdd(length));                  // Nxty: Capture where it should be placed in the buffer
       byte[] valArrayWithOffset = buf.array();           // Nxty
-      } catch (Exception e) {
-        Log.d("BLE", "onCharacteristicChanged catch:" + e.getMessage());
-      }
+
       
 Log.d("BLE", "onCharacteristicChanged: legth=" + length);      
       
@@ -4087,6 +4085,11 @@ Log.d("BLE", "onCharacteristicChanged: valArrayWithOffset legth=" + valArrayWith
       PluginResult result = new PluginResult(PluginResult.Status.OK, returnObj);
       result.setKeepCallback(true);
       callbackContext.sendPluginResult(result);
+      
+      
+     } catch (Exception e) {
+        Log.d("BLE", "onCharacteristicChanged catch:" + e.getMessage());
+     }
     }
 
     @Override
