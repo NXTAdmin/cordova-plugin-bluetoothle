@@ -4037,6 +4037,8 @@ public class BluetoothLePlugin extends CordovaPlugin {
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
     
+Log.d("BLE", "onCharacteristicChanged: I am here"); 
+    
       byte[] valArray = characteristic.getValue();       // Nxty: Get a reference to the characteristic
       int length = valArray.length;                      // Nxty: Get the length of the characteristic
       ByteBuffer buf = ByteBuffer.allocate(length + 4);  // Nxty: create a buffer to do the capture, sizeof(int)=4
