@@ -4039,12 +4039,16 @@ public class BluetoothLePlugin extends CordovaPlugin {
     
 Log.d("BLE", "onCharacteristicChanged: I am here"); 
     
+      try {
       byte[] valArray = characteristic.getValue();       // Nxty: Get a reference to the characteristic
       int length = valArray.length;                      // Nxty: Get the length of the characteristic
       ByteBuffer buf = ByteBuffer.allocate(length + 4);  // Nxty: create a buffer to do the capture, sizeof(int)=4
       buf.put(valArray, 4, length);                      // Nxty: Capture the characteristic value
       buf.putInt(ai.getAndAdd(length));                  // Nxty: Capture where it should be placed in the buffer
       byte[] valArrayWithOffset = buf.array();           // Nxty
+      } catch (Exception e) {
+        Log.d("BLE", "onCharacteristicChanged catch:" + e.getMessage());
+      }
       
 Log.d("BLE", "onCharacteristicChanged: legth=" + length);      
       
