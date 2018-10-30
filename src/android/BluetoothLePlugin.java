@@ -4031,65 +4031,55 @@ public class BluetoothLePlugin extends CordovaPlugin {
       }
     }
 
-    
-    private AtomicInteger ai;   // Nxty: New member variable of the bluetoothGattCallback class
+    private AtomicInteger ai = new AtomicInteger(0);   // Nxty: New member variable of the bluetoothGattCallback class
      
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+
+        byte[] valArray = characteristic.getValue();       // Nxty: Get a reference to the characteristic
+        int length = valArray.length;                      // Nxty: Get the length of the characteristic
+        ByteBuffer buf = ByteBuffer.allocate(length + 4);  // Nxty: create a buffer to do the capture, sizeof(int)=4
+        int offset = ai.getAndAdd(length); 
+        buf.putInt(offset);                  // Nxty: Capture where it should be placed in the buffer
+        buf.put(valArray);                      // Nxty: Capture the characteristic value
+        byte[] valArrayWithOffset = buf.array();           // Nxty
     
-Log.d("BLE", "onCharacteristicChanged: I am here"); 
-    
-      try {
-      byte[] valArray = characteristic.getValue();       // Nxty: Get a reference to the characteristic
-      int length = valArray.length;                      // Nxty: Get the length of the characteristic
-      ByteBuffer buf = ByteBuffer.allocate(length + 4);  // Nxty: create a buffer to do the capture, sizeof(int)=4
-      buf.put(valArray, 4, length);                      // Nxty: Capture the characteristic value
-      buf.putInt(ai.getAndAdd(length));                  // Nxty: Capture where it should be placed in the buffer
-      byte[] valArrayWithOffset = buf.array();           // Nxty
-
       
-Log.d("BLE", "onCharacteristicChanged: legth=" + length);      
-      
-      //Get the connected device
-      BluetoothDevice device = gatt.getDevice();
-      String address = device.getAddress();
+        //Get the connected device
+        BluetoothDevice device = gatt.getDevice();
+        String address = device.getAddress();
 
-      HashMap<Object, Object> connection = connections.get(address);
-      if (connection == null) {
-        return;
-      }
+        HashMap<Object, Object> connection = connections.get(address);
+        if (connection == null) {
+          return;
+        }
 
-      UUID characteristicUuid = characteristic.getUuid();
+        UUID characteristicUuid = characteristic.getUuid();
 
-      CallbackContext callbackContext = GetCallback(characteristicUuid, connection, operationSubscribe);
+        CallbackContext callbackContext = GetCallback(characteristicUuid, connection, operationSubscribe);
 
-      //If no callback, just return
-      if (callbackContext == null) {
-        return;
-      }
+        //If no callback, just return
+        if (callbackContext == null) {
+          return;
+        }
 
-      JSONObject returnObj = new JSONObject();
+        JSONObject returnObj = new JSONObject();
 
-      addDevice(returnObj, device);
+        addDevice(returnObj, device);
 
-      addCharacteristic(returnObj, characteristic);
+        addCharacteristic(returnObj, characteristic);
 
-Log.d("BLE", "onCharacteristicChanged: valArrayWithOffset legth=" + valArrayWithOffset.length);      
+//Log.d("BLE", "onCharacteristicChanged: valArrayWithOffset legth=" + valArrayWithOffset.length);      
       
       
-      addProperty(returnObj, keyStatus, statusSubscribedResult);
+        addProperty(returnObj, keyStatus, statusSubscribedResult);
 //      addPropertyBytes(returnObj, keyValue, characteristic.getValue());   // Nxty
-      addPropertyBytes(returnObj, keyValue, valArrayWithOffset );           // Nxty
+        addPropertyBytes(returnObj, keyValue, valArrayWithOffset );           // Nxty
       
-      //Return the characteristic value
-      PluginResult result = new PluginResult(PluginResult.Status.OK, returnObj);
-      result.setKeepCallback(true);
-      callbackContext.sendPluginResult(result);
-      
-      
-     } catch (Exception e) {
-        Log.d("BLE", "onCharacteristicChanged catch:" + e.getMessage());
-     }
+        //Return the characteristic value
+        PluginResult result = new PluginResult(PluginResult.Status.OK, returnObj);
+        result.setKeepCallback(true);
+        callbackContext.sendPluginResult(result);
     }
 
     @Override
