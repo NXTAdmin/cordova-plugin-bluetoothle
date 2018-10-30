@@ -4044,7 +4044,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
       buf.putInt(ai.getAndAdd(length));                  // Nxty: Capture where it should be placed in the buffer
       byte[] valArrayWithOffset = buf.array();           // Nxty
       
-Log.d("BLE", "onCharacteristicChanged: legth=%d", length);      
+Log.d("BLE", "onCharacteristicChanged: legth=" + length);      
       
       //Get the connected device
       BluetoothDevice device = gatt.getDevice();
@@ -4070,7 +4070,7 @@ Log.d("BLE", "onCharacteristicChanged: legth=%d", length);
 
       addCharacteristic(returnObj, characteristic);
 
-Log.d("BLE", "onCharacteristicChanged: valArrayWithOffset legth=%d", valArrayWithOffset.length);      
+Log.d("BLE", "onCharacteristicChanged: valArrayWithOffset legth=" + valArrayWithOffset.length);      
       
       
       addProperty(returnObj, keyStatus, statusSubscribedResult);
