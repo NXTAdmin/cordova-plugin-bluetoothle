@@ -2123,7 +2123,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
 
     AddCallback(characteristicUuid, connection, operationWrite, callbackContext);
 
-    queueQuick.clear();
+// Nxty temp test    queueQuick.clear();
 
     int length = value.length;
     int chunkSize = 20;
