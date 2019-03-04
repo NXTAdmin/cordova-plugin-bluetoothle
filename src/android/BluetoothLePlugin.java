@@ -2062,6 +2062,16 @@ public class BluetoothLePlugin extends CordovaPlugin {
     return true;
   }
 
+  // Nxty JDO...........................................
+  private static String bytesToHex(byte[] in) {
+    final StringBuilder builder = new StringBuilder();
+    for(byte b : in) {
+        builder.append(String.format("%02x", b));
+    }
+    return builder.toString();
+  }
+  // Nxty JDO...........................................
+  
   private void writeQAction(JSONArray args, CallbackContext callbackContext) {
     if (isNotInitialized(callbackContext, true)) {
       return;
@@ -2129,7 +2139,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
     int chunkSize = 20;
     int offset = 0;
 
-    Log.d("BLE", "JDO: writeQAction in:" + Arrays.toString(value) );  // Nxty jdo test
+    Log.d("BLE", "JDO: writeQAction in:" + bytesToHex(value) );  // Nxty jdo test
     
     do {
       int thisChunkSize = length - offset > chunkSize ? chunkSize : length - offset;
@@ -2137,7 +2147,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
       byte[] chunk = Arrays.copyOfRange(value, offset, offset + thisChunkSize);
 
       offset += thisChunkSize;
-      Log.d("BLE", "  - make chunk:" + Arrays.toString(chunk) );  // Nxty jdo test
+      Log.d("BLE", "  -  make chunk:" + bytesToHex(chunk) );  // Nxty jdo test
 
       queueQuick.add(chunk);
 
@@ -2149,7 +2159,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
   private void writeQ(HashMap<Object, Object> connection, BluetoothGattCharacteristic characteristic, BluetoothGatt bluetoothGatt) {
     byte[] value = queueQuick.poll();
 
-    Log.d("BLE", "JDO: writeQ chunk out:" + Arrays.toString(value) );  // Nxty jdo test
+    Log.d("BLE", "JDO: writeQ out:" + bytesToHex(value) );  // Nxty jdo test
 
     if (value == null) {
       JSONObject returnObj = new JSONObject();
