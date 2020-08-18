@@ -1,3 +1,62 @@
+## 5.0.2 - 2020-08-05
+- Update cordovaDependencies to allow install [\#632](https://github.com/randdusing/cordova-plugin-bluetoothle/issues/632)
+
+## 5.0.1 - 2020-07-31
+- Reset isAdvertising flag when Bluetooth resets [\#302](https://github.com/randdusing/cordova-plugin-bluetoothle/issues/302)
+
+## 5.0.0 - 2020-07-21
+- Improves writeQ performance [\#617](https://github.com/randdusing/cordova-plugin-bluetoothle/issues/617)
+- Potentially breaking change, thus the version bump:
+  - iOS 10 required
+  - writeQ returns a success callback even with iOS's noResponse type. Ignore callback to keep existing behavior
+  - Review writeQ section of [readme](https://github.com/randdusing/cordova-plugin-bluetoothle#writeq)
+
+## 4.5.14 - 2020-06-25
+- Fix NPE in Android [\#615](https://github.com/randdusing/cordova-plugin-bluetoothle/issues/615)
+
+## 4.5.13 - 2020-06-16
+- Use fine location permissions to fix scanning in Android 10 [\#579](https://github.com/randdusing/cordova-plugin-bluetoothle/issues/579)
+
+## 4.5.12 - 2020-06-03
+- Update types
+
+## 4.5.11 - 2020-05-20
+- Reinitialize gatt server when Bluetooth resets [\#302](https://github.com/randdusing/BluetoothLE/issues/302)
+
+## 4.5.10 - 2020-04-10
+- Remove unnecessary check when advertising
+
+## 4.5.9 - 2020-03-13
+- Add null check when disabling scan on newer Android versions
+- Update docs
+
+## 4.5.8 - 2020-03-08
+- Improve connection reliability on Android
+
+## 4.5.7 - 2020-02-11
+- Stop scan when Bluetooth is disabled on Android v6+
+
+## 4.5.6 - 2019-11-10
+- Fix issue when adding descriptors
+
+## 4.5.5 - 2019-06-06
+- Fixed typings
+
+## 4.5.4 - 2019-05-31
+- Add write response error code on Android
+
+## 4.5.3 - 2019-01-15
+- Handle optional name when advertising on iOS
+
+## 4.5.2 - 2019-01-14
+- Fix typescript typings typo
+
+## 4.5.1 - 2019-01-05
+- Allow disable timeout on Android
+
+## 4.5.0 - 2018-12-25
+- Improve Windows support
+
 ## 4.4.4 - 2018-06-28
 - Fix typescript typings typo
 
