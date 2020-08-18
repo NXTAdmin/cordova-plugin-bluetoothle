@@ -59,7 +59,7 @@ import android.util.Log;
 public class BluetoothLePlugin extends CordovaPlugin {
   //Initialization related variables
   private final int REQUEST_BT_ENABLE = 59627; /*Random integer*/
-  private final int REQUEST_ACCESS_COARSE_LOCATION = 59628;
+  private final int REQUEST_ACCESS_FINE_LOCATION = 59628;
   private final int REQUEST_LOCATION_SOURCE_SETTINGS = 59629;
   private BluetoothAdapter bluetoothAdapter;
   private boolean isReceiverRegistered = false;
@@ -442,12 +442,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
 
     initPeripheralCallback = callbackContext;
 
-    //Re-opening Gatt server seems to cause some issues
-    if (gattServer == null) {
-      Activity activity = cordova.getActivity();
-      BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-      gattServer = bluetoothManager.openGattServer(activity.getApplicationContext(), bluetoothGattServerCallback);
-    }
+    initGattServer();
 
     JSONObject returnObj = new JSONObject();
     addProperty(returnObj, keyStatus, statusEnabled);
@@ -562,11 +557,11 @@ public class BluetoothLePlugin extends CordovaPlugin {
       JSONArray descriptorsIn = obj.optJSONArray("descriptors");
 
       if (descriptorsIn != null) {
-        for (int j = 0; j < descriptorsIn.length(); i++) {
+        for (int j = 0; j < descriptorsIn.length(); j++) {
           JSONObject descriptorIn = null;
 
           try {
-            descriptorIn = descriptorsIn.getJSONObject(i);
+            descriptorIn = descriptorsIn.getJSONObject(j);
           } catch (JSONException ex) {
             continue;
           }
@@ -686,7 +681,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
 
     BluetoothLeAdvertiser advertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
-    if (advertiser == null || !bluetoothAdapter.isMultipleAdvertisementSupported()) {
+    if (advertiser == null) {
       JSONObject returnObj = new JSONObject();
 
       addProperty(returnObj, "error", "startAdvertising");
@@ -711,11 +706,11 @@ public class BluetoothLePlugin extends CordovaPlugin {
     settingsBuilder.setConnectable(connectable);
 
     int timeout = obj.optInt("timeout", 1000);
-    if (timeout < 1 || timeout > 180000) {
+    if (timeout < 0 || timeout > 180000) {
       JSONObject returnObj = new JSONObject();
 
       addProperty(returnObj, "error", "startAdvertising");
-      addProperty(returnObj, "message", "Invalid timeout (1 - 180000)");
+      addProperty(returnObj, "message", "Invalid timeout (0 - 180000)");
 
       callbackContext.error(returnObj);
       return;
@@ -761,10 +756,10 @@ public class BluetoothLePlugin extends CordovaPlugin {
 
   private void stopAdvertisingAction(JSONArray args, CallbackContext callbackContext) {
     BluetoothLeAdvertiser advertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
-    if (advertiser == null || !bluetoothAdapter.isMultipleAdvertisementSupported()) {
+    if (advertiser == null) {
       JSONObject returnObj = new JSONObject();
 
-      addProperty(returnObj, "error", "startAdvertising");
+      addProperty(returnObj, "error", "stopAdvertising");
       addProperty(returnObj, "message", "Advertising isn't supported");
 
       callbackContext.error(returnObj);
@@ -772,6 +767,8 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
 
     advertiser.stopAdvertising(advertiseCallback);
+
+    if (isAdvertising) isAdvertising = false;
 
     JSONObject returnObj = new JSONObject();
     addProperty(returnObj, "status", "advertisingStopped");
@@ -879,7 +876,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
   public void hasPermissionAction(CallbackContext callbackContext) {
     JSONObject returnObj = new JSONObject();
 
-    addProperty(returnObj, "hasPermission", cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION));
+    addProperty(returnObj, "hasPermission", cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION));
 
     callbackContext.success(returnObj);
   }
@@ -894,7 +891,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
 
     permissionsCallback = callbackContext;
-    cordova.requestPermission(this, REQUEST_ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION);
+    cordova.requestPermission(this, REQUEST_ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION);
   }
 
   public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
@@ -905,7 +902,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
     //Just call hasPermission again to verify
     JSONObject returnObj = new JSONObject();
 
-    addProperty(returnObj, "requestPermission", cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION));
+    addProperty(returnObj, "requestPermission", cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION));
 
     permissionsCallback.success(returnObj);
   }
@@ -1013,16 +1010,16 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
   }
 
-  
+
   /**
-  * Retrieves a minimal set of adapter details 
+  * Retrieves a minimal set of adapter details
   * (address, name, initialized state, enabled state, scanning state, discoverable state)
   */
-  private void getAdapterInfoAction(CallbackContext callbackContext) {    
-    JSONObject returnObj = new JSONObject();    
+  private void getAdapterInfoAction(CallbackContext callbackContext) {
+    JSONObject returnObj = new JSONObject();
 
     // Not yet initialized
-    if (bluetoothAdapter == null) {      
+    if (bluetoothAdapter == null) {
       Activity activity = cordova.getActivity();
       BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
       BluetoothAdapter bluetoothAdapterTmp = bluetoothManager.getAdapter();
@@ -1037,7 +1034,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
       PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
       pluginResult.setKeepCallback(true);
       callbackContext.sendPluginResult(pluginResult);
-      return;      
+      return;
     } else {
       // Already initialized, so use the bluetoothAdapter class property to get all the info
       addProperty(returnObj, keyAddress, bluetoothAdapter.getAddress());
@@ -1048,10 +1045,10 @@ public class BluetoothLePlugin extends CordovaPlugin {
       addProperty(returnObj, keyIsDiscoverable, bluetoothAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
       PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
       pluginResult.setKeepCallback(true);
-      callbackContext.sendPluginResult(pluginResult);      
+      callbackContext.sendPluginResult(pluginResult);
       return;
     }
-    
+
   }
 
   private void enableAction(CallbackContext callbackContext) {
@@ -1104,7 +1101,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
 
     Log.d("BLE", "JDO: start scan");
-          
+
     //If the adapter is already scanning, don't call another scan.
     if (scanCallbackContext != null) {
       JSONObject returnObj = new JSONObject();
@@ -1486,13 +1483,13 @@ public class BluetoothLePlugin extends CordovaPlugin {
 //      BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback);
 //    } else {
 //      BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
-//    }    
-    
+//    }
+
+    connections.put(device.getAddress(), connection);
+
     BluetoothGatt bluetoothGatt = device.connectGatt(cordova.getActivity().getApplicationContext(), autoConnect, bluetoothGattCallback);
 
     connection.put(keyPeripheral, bluetoothGatt);
-
-    connections.put(device.getAddress(), connection);
   }
 
   private void reconnectAction(JSONArray args, CallbackContext callbackContext) {
@@ -1705,7 +1702,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
         boolean bool = ((Boolean) localMethod.invoke(localBluetoothGatt, new Object[0])).booleanValue();
         return bool;
       }
-    } 
+    }
     catch (Exception localException) {
       Log.e("BLE", "An exception occured while refreshing device cache");
     }
@@ -2071,7 +2068,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
     return builder.toString();
   }
   // Nxty JDO...........................................
-  
+
   private void writeQAction(JSONArray args, CallbackContext callbackContext) {
     if (isNotInitialized(callbackContext, true)) {
       return;
@@ -2136,11 +2133,11 @@ public class BluetoothLePlugin extends CordovaPlugin {
     queueQuick.clear();
 
     int length = value.length;
-    int chunkSize = 20;
+    int chunkSize = obj.optInt("chunkSize", 20);
     int offset = 0;
 
 //    Log.d("BLE", "JDO: writeQAction in:" + bytesToHex(value) );  // Nxty jdo test
-    
+
     do {
       int thisChunkSize = length - offset > chunkSize ? chunkSize : length - offset;
 
@@ -2804,20 +2801,47 @@ public class BluetoothLePlugin extends CordovaPlugin {
             addProperty(returnObj, keyMessage, logNotEnabled);
 
             connections = new HashMap<Object, HashMap<Object, Object>>();
+            if (scanCallbackContext != null) {
+              if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+                // Unsure why some devices return null
+                if (scanner != null) {
+                  scanner.stopScan(scanCallback);
+                }
+              }
+            }
             scanCallbackContext = null;
+
+            // Reset isAdvertising when adapter is off (if STATE_TURNING_OFF doesn't trigger)
+            if (isAdvertising) isAdvertising = false;
+
+            gattServer = null;
 
             pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
             pluginResult.setKeepCallback(true);
             initCallbackContext.sendPluginResult(pluginResult);
 
+            if (initPeripheralCallback != null) initPeripheralCallback.sendPluginResult(pluginResult);
+
+            break;
+          case BluetoothAdapter.STATE_TURNING_OFF:
+            // Reset isAdvertising when adapter is turning off
+            if (isAdvertising) isAdvertising = false;
+
+            // Make sure gattServer is not null (in case this triggers when it is null)
+            if (gattServer != null) gattServer.close();
             break;
           case BluetoothAdapter.STATE_ON:
 
             addProperty(returnObj, keyStatus, statusEnabled);
 
+            initGattServer();
+
             pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
             pluginResult.setKeepCallback(true);
             initCallbackContext.sendPluginResult(pluginResult);
+
+            if (initPeripheralCallback != null) initPeripheralCallback.sendPluginResult(pluginResult);
 
             break;
         }
@@ -4047,19 +4071,19 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
 
     private AtomicInteger ai = new AtomicInteger(0);   // Nxty: New member variable of the bluetoothGattCallback class
-     
+
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 
         byte[] valArray = characteristic.getValue();       // Nxty: Get a reference to the characteristic
         int length = valArray.length;                      // Nxty: Get the length of the characteristic
         ByteBuffer buf = ByteBuffer.allocate(length + 4);  // Nxty: create a buffer to do the capture, sizeof(int)=4
-        int offset = ai.getAndAdd(length); 
+        int offset = ai.getAndAdd(length);
         buf.putInt(offset);                  // Nxty: Capture where it should be placed in the buffer
         buf.put(valArray);                      // Nxty: Capture the characteristic value
         byte[] valArrayWithOffset = buf.array();           // Nxty
-    
-      
+
+
         //Get the connected device
         BluetoothDevice device = gatt.getDevice();
         String address = device.getAddress();
@@ -4084,13 +4108,13 @@ public class BluetoothLePlugin extends CordovaPlugin {
 
         addCharacteristic(returnObj, characteristic);
 
-//Log.d("BLE", "onCharacteristicChanged: valArrayWithOffset legth=" + valArrayWithOffset.length);      
-      
-      
+//Log.d("BLE", "onCharacteristicChanged: valArrayWithOffset legth=" + valArrayWithOffset.length);
+
+
         addProperty(returnObj, keyStatus, statusSubscribedResult);
 //      addPropertyBytes(returnObj, keyValue, characteristic.getValue());   // Nxty
         addPropertyBytes(returnObj, keyValue, valArrayWithOffset );           // Nxty
-      
+
         //Return the characteristic value
         PluginResult result = new PluginResult(PluginResult.Status.OK, returnObj);
         result.setKeepCallback(true);
@@ -4133,6 +4157,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
 
           addProperty(returnObj, keyError, errorWrite);
           addProperty(returnObj, keyMessage, logWriteFailReturn);
+          addProperty(returnObj, keyStatus, status);
           callbackContext.error(returnObj);
         }
 
@@ -4160,6 +4185,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
         //Else it failed
         addProperty(returnObj, keyError, errorWrite);
         addProperty(returnObj, keyMessage, logWriteFailReturn);
+        addProperty(returnObj, keyStatus, status);
         callbackContext.error(returnObj);
       }
     }
@@ -4566,4 +4592,13 @@ public class BluetoothLePlugin extends CordovaPlugin {
       }
     }
   };
+
+  private void initGattServer() {
+    //Re-opening Gatt server seems to cause some issues
+    if (gattServer == null) {
+      Activity activity = cordova.getActivity();
+      BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+      gattServer = bluetoothManager.openGattServer(activity.getApplicationContext(), bluetoothGattServerCallback);
+    }
+  }
 }
