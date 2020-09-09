@@ -265,7 +265,7 @@ declare namespace BluetoothlePlugin {
         writeQ(
             writeSuccess: (result: OperationResult) => void,
             writeError: (error: Error) => void,
-            params: WriteCharacteristicParams): void;
+            params: WriteQCharacteristicParams): void;
 
         /**
          * Read a particular characterist's descriptor
@@ -511,7 +511,7 @@ declare namespace BluetoothlePlugin {
          *
          */
         isAdvertising(
-            success: (result: { status: boolean }) => void,
+            success: (result: { isAdvertising: boolean }) => void,
             error: (error: Error) => void): void;
 
         /**
@@ -577,7 +577,7 @@ declare namespace BluetoothlePlugin {
         | "rssi" | "mtu" | "connectionPriorityRequested" |"enabled" | "disabled"
         | "readRequested" | "writeRequested" | "mtuChanged" | "notifyReady" | "notifySent"
         | "serviceAdded" | "serviceRemoved" | "allServicesRemoved" | "advertisingStarted"
-        | "advertisingStopped" | "responded" | "notified";
+        | "advertisingStopped" | "responded" | "notified" | "notificationSent";
 
     /** Avaialable connection priorities */
     type ConnectionPriority = "low" | "balanced" | "high";
@@ -614,7 +614,9 @@ declare namespace BluetoothlePlugin {
         /** Defaults to One Advertisement. Available from API23 (Android) */
         matchNum?: BluetoothMatchNum,
         /** Defaults to All Matches. Available from API21 / API 23. (Android) */
-        callbackType?: BluetoothCallbackType
+        callbackType?: BluetoothCallbackType,
+        /** True/false to show only connectable devices, rather than all devices ever seen, defaults to false (Windows)*/
+        isConnectable?: boolean
     }
 
     interface NotifyParams {
@@ -655,6 +657,11 @@ declare namespace BluetoothlePlugin {
         value: string,
         /* Set to "noResponse" to enable write without response, all other values will write normally. */
         type?: string
+    }
+
+    interface WriteQCharacteristicParams extends WriteCharacteristicParams {
+        /* Define the size of packets. This should be according to MTU value */
+        chunkSize?: number
     }
 
     interface WriteDescriptorParams extends DescriptorParams {
@@ -812,7 +819,7 @@ declare namespace BluetoothlePlugin {
             writeEncryptionRequired?: boolean
         }
     }
-    
+
     interface Descriptor {
         uuid: string;
     }
@@ -871,7 +878,7 @@ declare namespace BluetoothlePlugin {
         /** Service's UUID */
         service: string,
         /** Characteristic UUID */
-        characterisitc: string,
+        characteristic: string,
         /** This integer value will be incremented every read/writeRequested */
         requestId: number,
         /** Offset value */
