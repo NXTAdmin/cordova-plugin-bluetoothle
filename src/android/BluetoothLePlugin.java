@@ -61,6 +61,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
   private final int REQUEST_BT_ENABLE = 59627; /*Random integer*/
   private final int REQUEST_ACCESS_FINE_LOCATION = 59628;
   private final int REQUEST_LOCATION_SOURCE_SETTINGS = 59629;
+  private final int REQUEST_ACCESS_BACKGROUND_LOCATION = 59630;
   private BluetoothAdapter bluetoothAdapter;
   private boolean isReceiverRegistered = false;
   private boolean isBondReceiverRegistered = false;
@@ -891,7 +892,15 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
 
     permissionsCallback = callbackContext;
-    cordova.requestPermission(this, REQUEST_ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) // Nxty
+    {
+        cordova.requestPermission(this, REQUEST_ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION); 
+    }
+    else
+    {
+        // Android 10 requires BACKGROUND permission to display "Always" in system dialog.
+        cordova.requestPermission(this, REQUEST_ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+    }
   }
 
   public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
