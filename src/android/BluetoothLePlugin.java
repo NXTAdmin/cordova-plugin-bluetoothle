@@ -899,7 +899,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
     else
     {
         // Android 10 requires BACKGROUND permission to display "Always" in system dialog.
-        cordova.requestPermission(this, REQUEST_ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION); 
+//        cordova.requestPermission(this, REQUEST_ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION); 
         cordova.requestPermission(this, REQUEST_ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
     }
   }
